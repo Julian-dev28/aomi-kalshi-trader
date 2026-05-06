@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard · Open Trader{% endblock %}
+
+{% block content %}
+<div style="min-height:100vh;background:var(--bg-primary);display:flex;flex-direction:column;">
+
+  <!-- Header -->
+  <header class="app-header">
+    <div style="display:flex;align-items:center;gap:14px;">
+      <div>
+        <div style="font-size:15px;font-weight:700;letter-spacing:-0.03em;line-height:1.15;color:var(--text-primary);">
+          Open <span style="color:var(--blue);">Trader</span>
+        </div>
+        <div style="font-size:9px;color:var(--text-muted);letter-spacing:0.06em;text-transform:uppercase;margin-top:1px;">
+          AI Agent · Hyperliquid BTC-PERP
+        </div>
+      </div>
+      <div style="height:22px;width:1px;background:var(--border);margin:0 2px;"></div>
+      <a href="/dashboard" class="nav-tab active">Dashboard</a>
+      <a href="/agent"     class="nav-tab">Agent</a>
+      <div style="height:22px;width:1px;background:var(--border);margin:0 2px;"></div>
+      <div style="display:flex;gap:12px;align-items:center;">
+        <span style="font-size:10px;font-weight:600;color:var(--text-muted);letter-spacing:0.03em;">BTC-PERP</span>
+        <span style="display:flex;align-items:center;gap:4px;font-size:10px;font-weight:600;color:var(--green-dark);">
+          <span style="width:5px;height:5px;border-radius:50%;background:var(--green);display:inline-block;"></span>
+          Live · Hyperliquid
+        </span>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:16px;">
+      <div class="cycle-badge">
+        <div style="font-size:9px;color:var(--text-muted);line-height:1;margin-bottom:2px;">Price</div>
+        <div id="header-price" style="font-family:monospace;font-size:14px;font-weight:800;color:var(--brown);">—</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <span class="status-dot live"></span>
+        <span id="header-clock" style="font-family:monospace;font-size:11px;color:var(--text-secondary);">—</span>
+      </div>
+    </div>
+  </header>
+
+  <main style="flex:1;display:grid;grid-template-columns:280px 1fr 260px;gap:12px;padding:16px 20px;align-items:start;min-height:0;">
+
+    <!-- Left: Account card -->
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <div class="card" id="market-card">
+        <div style="font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">BTC-PERP</div>
+        <div id="btc-price-display" style="font-family:monospace;font-size:28px;font-weight:800;color:var(--text-primary);letter-spacing:-0.02em;">—</div>
+        <div style="height:1px;background:var(--border);margin:12px 0;"></div>
+        <div style="font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">Account</div>
+        <div id="account-info">
+          <div style="font-family:monospace;font-size:11px;color:var(--text-muted);">Loading…</div>
+        </div>
+        <button onclick="refreshAccount()" style="margin-top:10px;width:100%;padding:6px;border-radius:8px;border:1px solid var(--border);background:var(--bg-secondary);cursor:pointer;font-size:11px;font-weight:600;color:var(--text-muted);">↺ Refresh</button>
+      </div>
+    </div>
+
+    <!-- Center: Chart + Analysis -->
+    <div style="display:flex;flex-direction:column;gap:12px;">
+
+      <!-- Chart card -->
+      <div class="card" style="padding:16px 14px 12px;">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;padding:0 2px;">
+          <div>
+            <div style="font-size:10px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:3px;">BTC-PERP · Hyperliquid</div>
+            <div style="display:flex;align-items:baseline;gap:10px;">
+              <span id="chart-price" style="font-family:monospace;font-size:26px;font-weight:800;color:var(--text-primary);letter-spacing:-0.02em;">—</span>
+            </div>
+          </div>
+          <div style="display:flex;gap:3px;">
+            <button onclick="setChartWindow('1h')" id="btn-1h" style="background:var(--text-primary);color:var(--bg-card);border:1px solid var(--text-primary);border-radius:6px;padding:3px 10px;font-size:10px;font-weight:700;cursor:pointer;">1h</button>
+          </div>
+        </div>
+        <div id="chart-container" style="width:100%;height:280px;position:relative;">
+          <canvas id="price-chart" style="display:block;"></canvas>
+          <div id="chart-loading" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;">
+            <div style="font-size:10px;letter-spacing:0.07em;font-weight:600;color:var(--text-muted);text-transform:uppercase;">Loading chart…</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- AI Analysis panel -->
+      <div class="card" style="padding:18px 20px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div style="width:24px;height:24px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,var(--blue),var(--green));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;">A</div>
+            <span style="font-size:13px;font-weight:700;color:var(--text-primary);letter-spacing:-0.01em;">AI Analysis</span>
+          </div>
+          <button id="analyze-btn" onclick="runAnalysis()" style="padding:5px 16px;border-radius:20px;font-size:12px;font-weight:700;border:none;cursor:pointer;background:var(--blue);color:#fff;transition:all 0.15s;">
+            Analyze
+          </button>
+        </div>
+        <div id="analysis-dots" style="display:none;gap:5px;padding:8px 0;">
+          <span class="dot-bounce" style="animation-delay:0s;"></span>
+          <span class="dot-bounce" style="animation-delay:0.2s;"></span>
+          <span class="dot-bounce" style="animation-delay:0.4s;"></span>
+        </div>
+        <div id="analysis-error" style="display:none;padding:10px 14px;border-radius:10px;background:rgba(224,111,160,0.06);border:1px solid rgba(224,111,160,0.2);font-size:12px;color:var(--pink-dark);line-height:1.5;"></div>
+        <div id="analysis-placeholder" style="padding:12px 0;font-size:12px;color:var(--text-muted);line-height:1.6;">
+          Click <strong>Analyze</strong> to get a live market verdict — Hyperliquid data + reasoning.
+        </div>
+        <div id="analysis-output" style="display:none;flex-direction:column;gap:4px;"></div>
+      </div>
+    </div>
+
+    <!-- Right: Orderbook -->
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <div class="card" style="padding:14px 16px;">
+        <div style="font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;">Order Book · BTC</div>
+        <div id="orderbook-asks" style="margin-bottom:8px;"></div>
+        <div style="height:1px;background:var(--border);margin:6px 0;"></div>
+        <div id="orderbook-bids" style=""></div>
+      </div>
+    </div>
+  </main>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/ticker.js"></script>
+<script src="/static/js/chart.js"></script>
+<script src="/static/js/dashboard.js"></script>
+{% endblock %}

@@ -1,0 +1,231 @@
+{% extends "base.html" %}
+
+{% block title %}Agent · Open Trader{% endblock %}
+
+{% block content %}
+<div style="height:100vh;background:var(--bg-primary);display:flex;flex-direction:column;overflow:hidden;">
+
+  <!-- Header -->
+  <header class="app-header">
+    <div style="display:flex;align-items:center;gap:14px;">
+      <div>
+        <div style="font-size:15px;font-weight:700;letter-spacing:-0.03em;line-height:1.15;color:var(--text-primary);">
+          Open <span style="color:var(--blue);">Trader</span>
+        </div>
+        <div style="font-size:9px;color:var(--text-muted);letter-spacing:0.06em;text-transform:uppercase;margin-top:1px;">
+          AI Agent · Hyperliquid BTC-PERP
+        </div>
+      </div>
+      <div style="height:22px;width:1px;background:var(--border);margin:0 2px;"></div>
+      <a href="/dashboard" class="nav-tab">Dashboard</a>
+      <a href="/agent"     class="nav-tab active">Agent</a>
+      <div style="height:22px;width:1px;background:var(--border);margin:0 2px;"></div>
+      <div style="display:flex;gap:12px;align-items:center;">
+        <span style="font-size:10px;font-weight:600;color:var(--text-muted);letter-spacing:0.03em;">BTC-PERP</span>
+        <span style="display:flex;align-items:center;gap:4px;font-size:10px;font-weight:600;color:var(--green-dark);">
+          <span style="width:5px;height:5px;border-radius:50%;background:var(--green);display:inline-block;"></span>
+          Live · Hyperliquid
+        </span>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:16px;">
+      <div class="cycle-badge">
+        <div style="font-size:9px;color:var(--text-muted);line-height:1;margin-bottom:2px;">Cycle</div>
+        <div id="header-cycle" style="font-family:monospace;font-size:14px;font-weight:800;color:var(--brown);">#0</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <span class="status-dot live"></span>
+        <span id="header-clock" style="font-family:monospace;font-size:11px;color:var(--text-secondary);">—</span>
+      </div>
+    </div>
+  </header>
+
+  <main style="flex:1;display:grid;grid-template-columns:260px 1fr 220px;gap:12px;min-height:0;overflow:hidden;padding:12px 16px;">
+
+    <!-- LEFT: Config -->
+    <div style="display:flex;flex-direction:column;gap:10px;overflow-y:auto;">
+
+      <!-- Balance -->
+      <div class="card" id="balance-card" style="padding:12px 16px;">
+        <div style="font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;">Balance</div>
+        <div id="balance-amount" style="font-family:monospace;font-size:20px;font-weight:800;color:var(--amber);">—</div>
+        <div id="balance-detail" style="display:flex;align-items:center;gap:8px;margin-top:3px;font-family:monospace;font-size:11px;color:var(--text-muted);">Loading…</div>
+      </div>
+
+      <!-- Trade settings -->
+      <div class="card" style="padding:14px 16px;">
+        <!-- Risk -->
+        <div style="margin-bottom:12px;">
+          <div style="font-size:10px;color:var(--text-muted);font-weight:600;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.06em;display:flex;justify-content:space-between;align-items:center;">
+            <span>Risk per trade</span>
+            <button onclick="toggleRiskEdit()" id="risk-edit-btn" style="background:none;border:none;cursor:pointer;color:var(--blue);font-size:10px;font-weight:600;padding:0;">edit</button>
+          </div>
+          <div id="risk-slider-row" style="display:none;align-items:center;gap:8px;margin-bottom:4px;">
+            <input type="range" id="risk-slider" min="1" max="100" value="5"
+              oninput="setRisk(this.value)"
+              style="flex:1;accent-color:var(--blue);">
+            <button onclick="toggleRiskEdit()" style="font-size:10px;font-weight:700;color:var(--blue);background:none;border:none;cursor:pointer;">done</button>
+          </div>
+          <div id="risk-pct-display" style="font-family:monospace;font-size:26px;font-weight:800;letter-spacing:-0.02em;color:var(--text-primary);">5%</div>
+          <div id="risk-notional" style="font-size:11px;color:var(--text-muted);margin-top:3px;font-family:monospace;"></div>
+        </div>
+        <div style="height:1px;background:var(--border);margin:4px 0 12px;"></div>
+        <!-- Leverage -->
+        <div>
+          <div style="font-size:10px;color:var(--text-muted);font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.06em;">Leverage</div>
+          <div style="display:flex;gap:5px;flex-wrap:wrap;" id="leverage-btns">
+            <button onclick="setLeverage(1)"  class="lev-btn" data-lev="1">1×</button>
+            <button onclick="setLeverage(2)"  class="lev-btn" data-lev="2">2×</button>
+            <button onclick="setLeverage(3)"  class="lev-btn" data-lev="3">3×</button>
+            <button onclick="setLeverage(5)"  class="lev-btn lev-active" data-lev="5">5×</button>
+            <button onclick="setLeverage(10)" class="lev-btn" data-lev="10">10×</button>
+            <button onclick="setLeverage(20)" class="lev-btn" data-lev="20">20×</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Start/Stop -->
+      <button id="start-stop-btn" onclick="toggleAutoMode()" style="padding:12px 0;border-radius:10px;border:none;cursor:pointer;font-weight:700;font-size:13px;letter-spacing:0.01em;background:var(--text-primary);color:var(--bg-card);transition:all 0.2s;">
+        ▶ Start Agent
+      </button>
+
+      <button onclick="runOnce()" id="run-once-btn" style="padding:8px 0;border-radius:10px;border:1px solid var(--border);background:var(--bg-card);cursor:pointer;font-weight:600;font-size:12px;color:var(--text-secondary);">
+        ↺ Run Once
+      </button>
+
+      <button onclick="resetSession()" style="padding:8px 0;border-radius:10px;border:1px solid var(--border);background:var(--bg-card);cursor:pointer;font-weight:600;font-size:12px;color:var(--text-muted);">
+        ↺ New Session
+      </button>
+
+      <!-- Agent info -->
+      <div class="card" style="padding:14px 16px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+          <span style="font-size:11px;font-weight:700;color:var(--text-primary);text-transform:uppercase;letter-spacing:0.06em;">Open Trader</span>
+          <span id="agent-status-pill" style="padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:0.05em;background:var(--bg-secondary);color:var(--text-muted);border:1px solid var(--border);display:flex;align-items:center;gap:5px;">IDLE</span>
+        </div>
+        <div class="info-row"><span class="info-label">Market</span><span class="info-val">BTC-PERP</span></div>
+        <div class="info-row"><span class="info-label">Timeframe</span><span class="info-val">1h – 4h</span></div>
+        <div class="info-row"><span class="info-label">Signal</span><span class="info-val">1h candles + book</span></div>
+        <div class="info-row" id="info-leverage"><span class="info-label">Leverage</span><span class="info-val">5×</span></div>
+        <div class="info-row"><span class="info-label">Execution</span><span class="info-val">Hyperliquid</span></div>
+      </div>
+
+    </div>
+
+    <!-- CENTER: Verdict + Trade Log -->
+    <div style="display:flex;flex-direction:column;gap:10px;min-height:0;overflow:hidden;">
+
+      <!-- Verdict card -->
+      <div class="card" id="verdict-card" style="padding:18px 20px;flex-shrink:0;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <span id="verdict-text" style="font-family:monospace;font-size:32px;font-weight:800;letter-spacing:-0.02em;color:var(--text-muted);line-height:1;">—</span>
+            <span id="cycle-badge-center" style="display:none;font-family:monospace;font-size:10px;color:var(--text-muted);font-weight:600;"></span>
+            <span id="auto-badge" style="display:none;padding:1px 7px;border-radius:20px;font-size:9px;font-weight:700;background:rgba(245,158,11,0.10);color:var(--amber);border:1px solid rgba(245,158,11,0.25);letter-spacing:0.05em;">AUTO</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <div id="processing-dots" style="display:none;gap:4px;">
+              <span class="dot-bounce" style="animation-delay:0s;"></span>
+              <span class="dot-bounce" style="animation-delay:0.2s;"></span>
+              <span class="dot-bounce" style="animation-delay:0.4s;"></span>
+            </div>
+            <span id="agent-state-text" style="font-family:monospace;font-size:10px;font-weight:700;color:var(--text-muted);">idle</span>
+          </div>
+        </div>
+        <div id="verdict-bullets" style="display:flex;flex-direction:column;gap:5px;"></div>
+        <div id="verdict-placeholder" style="font-family:monospace;font-size:11px;color:var(--text-muted);">// start the agent to begin</div>
+      </div>
+
+      <!-- Status / scanning -->
+      <div id="scan-area" style="flex-shrink:0;">
+        <div id="status-bar" style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--bg-card);border-radius:10px;border:1px solid var(--border);">
+          <span id="status-dot-el" style="width:9px;height:9px;border-radius:50%;flex-shrink:0;background:var(--text-muted);"></span>
+          <div style="flex:1;min-width:0;">
+            <div id="status-main" style="font-family:monospace;font-size:11px;font-weight:700;color:var(--text-muted);margin-bottom:2px;">agent paused</div>
+            <div id="status-sub" style="font-family:monospace;font-size:10px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">start agent for 24/7 autonomous trading</div>
+          </div>
+          <span id="live-badge-24h" style="display:none;font-size:9px;font-weight:700;color:var(--green-dark);font-family:monospace;opacity:0.7;letter-spacing:0.05em;">24/7</span>
+        </div>
+        <!-- CandleScan shown during processing -->
+        <div id="candle-scan" style="display:none;padding:12px 14px;border-radius:10px;background:rgba(74,127,165,0.04);border:1px solid rgba(74,127,165,0.14);">
+          <div style="position:relative;margin-bottom:10px;overflow:hidden;border-radius:6px;">
+            <svg id="candle-svg" width="100%" viewBox="0 0 200 72" height="72" style="display:block;">
+            </svg>
+            <div style="position:absolute;top:0;bottom:0;width:2px;background:linear-gradient(to bottom,transparent,rgba(74,127,165,0.65),transparent);animation:scanLine 2.4s linear infinite;pointer-events:none;"></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:7px;">
+            <span class="dot-bounce blue" style="animation-delay:0s;"></span>
+            <span class="dot-bounce blue" style="animation-delay:0.2s;"></span>
+            <span class="dot-bounce blue" style="animation-delay:0.4s;"></span>
+            <span id="scan-tool-text" style="font-family:monospace;font-size:11px;font-weight:700;color:var(--blue);">scanning market…</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Trade log -->
+      <div style="flex:1;min-height:0;display:flex;flex-direction:column;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-shrink:0;">
+          <span style="font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.07em;font-family:monospace;">Agent Trade Log</span>
+          <span id="trades-placed-badge" style="display:none;font-size:10px;color:var(--text-muted);font-family:monospace;"></span>
+        </div>
+        <div id="trade-log-empty" style="padding:10px 0;font-family:monospace;font-size:11px;color:var(--text-muted);">// start the agent to begin trading</div>
+        <div id="trade-log-table" style="display:none;flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:1px;">
+          <div style="display:grid;grid-template-columns:32px 70px 90px 1fr 80px 70px;gap:0;padding:4px 10px;border-bottom:1px solid var(--border);">
+            <span style="font-size:9px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.07em;">#</span>
+            <span style="font-size:9px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.07em;">Side</span>
+            <span style="font-size:9px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.07em;">Size</span>
+            <span style="font-size:9px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.07em;">Price</span>
+            <span style="font-size:9px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.07em;">P&amp;L</span>
+            <span style="font-size:9px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.07em;">Status</span>
+          </div>
+          <div id="trade-log-rows"></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT: Stats -->
+    <div style="display:flex;flex-direction:column;gap:10px;overflow-y:auto;">
+
+      <!-- Session P&L -->
+      <div class="card" style="padding:14px 16px;">
+        <div style="font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">Session P&L</div>
+        <div id="session-pnl" style="font-family:monospace;font-size:30px;font-weight:800;letter-spacing:-0.03em;color:var(--text-primary);line-height:1;">+$0.00</div>
+        <div id="session-winrate" style="display:none;font-size:11px;color:var(--text-muted);margin-top:4px;font-family:monospace;"></div>
+      </div>
+
+      <!-- Stats -->
+      <div class="card" style="padding:14px 16px;">
+        <div class="info-row"><span class="info-label">Cycles run</span><span id="stat-cycles" class="info-val">0</span></div>
+        <div class="info-row"><span class="info-label">Trades placed</span><span id="stat-trades" class="info-val">0</span></div>
+        <div class="info-row"><span class="info-label">Wins</span><span id="stat-wins" class="info-val">—</span></div>
+        <div class="info-row"><span class="info-label">Best trade</span><span id="stat-best" class="info-val">—</span></div>
+        <div class="info-row"><span class="info-label">Worst trade</span><span id="stat-worst" class="info-val">—</span></div>
+      </div>
+
+      <!-- Position -->
+      <div class="card" id="position-card" style="padding:14px 16px;">
+        <div style="font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">Position</div>
+        <div id="position-flat" style="font-family:monospace;font-size:13px;font-weight:700;color:var(--text-muted);">FLAT</div>
+        <div id="position-open" style="display:none;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+            <span id="pos-side-badge" style="padding:2px 9px;border-radius:20px;font-size:10px;font-weight:700;"></span>
+            <span id="pos-size" style="font-family:monospace;font-size:13px;font-weight:800;color:var(--text-primary);"></span>
+          </div>
+          <div style="font-size:11px;color:var(--text-muted);margin-bottom:2px;">Entry <span id="pos-entry" style="font-family:monospace;font-weight:700;color:var(--text-secondary);"></span></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px;">
+            <span id="pos-pnl" style="font-family:monospace;font-size:15px;font-weight:800;"></span>
+            <button onclick="closePosition()" style="padding:4px 12px;border-radius:7px;border:none;cursor:pointer;background:rgba(190,74,64,0.08);color:var(--pink-dark);font-weight:700;font-size:11px;outline:1px solid rgba(190,74,64,0.25);">Close</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/ticker.js"></script>
+<script src="/static/js/agent.js"></script>
+{% endblock %}

@@ -1,0 +1,39 @@
+[package]
+name = "aomi-trader"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "aomi-trader"
+path = "src/main.rs"
+
+[dependencies]
+axum = { version = "0.7", features = ["macros"] }
+tokio = { version = "1", features = ["full"] }
+tower-http = { version = "0.5", features = ["cors", "trace"] }
+futures = "0.3"
+tokio-stream = { version = "0.1", features = ["sync"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+reqwest = { version = "0.12", features = ["json", "stream"] }
+askama = { version = "0.12", features = ["with-axum"] }
+askama_axum = "0.4"
+k256 = { version = "0.13", features = ["ecdsa"] }
+sha3 = "0.10"
+hex = "0.4"
+rmp-serde = "1"
+rmpv = "1"
+dotenvy = "0.15"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+async-stream = "0.3"
+bytes = "1"
+rust-embed = { version = "8", features = ["axum"] }
+uuid = { version = "1", features = ["v4"] }
+dashmap = "6"
+tokio-util = { version = "0.7", features = ["rt"] }
+indexmap = { version = "2", features = ["serde"] }
+anyhow = "1"
+
+[profile.release]
+opt-level = 3

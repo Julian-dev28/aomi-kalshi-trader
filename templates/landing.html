@@ -1,0 +1,277 @@
+{% extends "base.html" %}
+
+{% block title %}Open Trader · BTC-PERP AI Agent{% endblock %}
+
+{% block content %}
+<div class="landing-root">
+
+  <!-- Nav -->
+  <nav class="landing-nav">
+    <a href="/" class="landing-nav-logo">OPEN <span class="landing-nav-accent">TRADER</span></a>
+    <div class="landing-nav-links">
+      <a href="#how"      class="landing-nav-link">How it works</a>
+      <a href="#tools"    class="landing-nav-link">Tools</a>
+      <a href="#signals"  class="landing-nav-link">Signals</a>
+      <a href="#features" class="landing-nav-link">Features</a>
+    </div>
+    <a href="/agent" class="landing-nav-cta">Open Agent →</a>
+  </nav>
+
+  <!-- Hero -->
+  <section class="landing-hero">
+    <div class="landing-hero-inner">
+      <p class="landing-hero-eyebrow">BTC-PERP · Hyperliquid · Powered by Qwen via OpenRouter</p>
+      <h1 class="landing-hero-headline">
+        TRADE<br>
+        <span class="landing-hero-accent">BTC</span><br>
+        PERP
+      </h1>
+      <p class="landing-hero-sub">
+        BTC-PERP runs 24/7. Before every trade, OpenTrader queries live Hyperliquid
+        price and order book data, checks your position, and searches the web
+        for current BTC news. LONG, SHORT, or PASS — grounded in what's
+        happening right now.
+      </p>
+      <div class="landing-hero-ctas">
+        <a href="/agent" class="landing-btn-primary">Open Agent →</a>
+        <a href="#how"   class="landing-btn-secondary">How it works</a>
+      </div>
+    </div>
+    <div class="landing-scroll-cue">
+      <div class="landing-scroll-line"></div>
+      Scroll
+    </div>
+  </section>
+
+  <!-- Stats -->
+  <div class="landing-stats-row">
+    <div class="landing-stat-item reveal">
+      <div class="landing-stat-num">24/7<span class="landing-stat-accent"></span></div>
+      <div class="landing-stat-label">continuous market</div>
+      <div class="landing-stat-desc">BTC-PERP never closes. OpenTrader watches it continuously — no windows, no gaps, no missed signals.</div>
+    </div>
+    <div class="landing-stat-item reveal d1">
+      <div class="landing-stat-num">5<span class="landing-stat-accent">×</span></div>
+      <div class="landing-stat-label">leverage</div>
+      <div class="landing-stat-desc">Cross-margin 5× leverage. Kelly-sized from your live equity. PASS on weak or ambiguous signals.</div>
+    </div>
+    <div class="landing-stat-item reveal d1">
+      <div class="landing-stat-num">0<span class="landing-stat-accent"> clicks</span></div>
+      <div class="landing-stat-label">after setup</div>
+      <div class="landing-stat-desc">Analysis, sizing, EIP-712 signing, order placement — all runs without you in Auto Mode.</div>
+    </div>
+  </div>
+
+  <!-- How it works -->
+  <section class="landing-section" id="how">
+    <div class="landing-inner">
+      <p class="landing-label reveal">How It Works</p>
+      <h2 class="landing-headline reveal d1">Six steps.<br>One decision.</h2>
+      <p class="landing-sub reveal d2">
+        From analysis trigger to executed order in a single agent cycle.
+        OpenTrader queries Hyperliquid, searches the web, reasons, and executes — or hands you the trade button.
+      </p>
+      <div class="landing-pipeline-list">
+        <div class="landing-pipeline-item reveal d1">
+          <span class="landing-pipeline-num">01</span>
+          <span class="landing-pipeline-name">Position &amp; Orders</span>
+          <span class="landing-pipeline-desc">get_clearinghouse_state reads your live equity, open position, and unrealized PnL. get_open_orders catches any stale orders before placing new ones.</span>
+        </div>
+        <div class="landing-pipeline-item reveal d1">
+          <span class="landing-pipeline-num">02</span>
+          <span class="landing-pipeline-name">Live Price &amp; Book</span>
+          <span class="landing-pipeline-desc">get_all_mids pulls the live BTC mid price. get_l2_book snapshots full order book depth — bid and ask pressure at every level.</span>
+        </div>
+        <div class="landing-pipeline-item reveal d1">
+          <span class="landing-pipeline-num">03</span>
+          <span class="landing-pipeline-name">Candle Momentum</span>
+          <span class="landing-pipeline-desc">get_candle_snapshot pulls the last 10 15-minute candles. Direction, acceleration, and structure — the primary signal driving every verdict.</span>
+        </div>
+        <div class="landing-pipeline-item reveal d2">
+          <span class="landing-pipeline-num">04</span>
+          <span class="landing-pipeline-name">Funding &amp; Fills</span>
+          <span class="landing-pipeline-desc">get_funding_history checks the current perpetual funding rate — positive means longs are paying. get_user_fills shows the last 5 executions for context.</span>
+        </div>
+        <div class="landing-pipeline-item reveal d2">
+          <span class="landing-pipeline-num">05</span>
+          <span class="landing-pipeline-name">AI Verdict</span>
+          <span class="landing-pipeline-desc">Agent synthesizes all 7 data sources and streams a direct verdict: LONG / SHORT / CLOSE / PASS — with confidence %. 60%+ is enough to act.</span>
+        </div>
+        <div class="landing-pipeline-item reveal d2">
+          <span class="landing-pipeline-num">06</span>
+          <span class="landing-pipeline-name">Risk Gate &amp; Execute</span>
+          <span class="landing-pipeline-desc">Kelly criterion sizes the trade from live equity. 5× leverage. Auto Mode places the IOC order on Hyperliquid. Real orders, real settlement, zero clicks.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- AOMI Tools -->
+  <section class="landing-section" id="tools">
+    <div class="landing-inner">
+      <p class="landing-label reveal">OpenTrader Hyperliquid Tools</p>
+      <h2 class="landing-headline reveal d1">8 live data tools.<br>Called every cycle.</h2>
+      <p class="landing-sub reveal d2">
+        Every agent cycle queries all 8 Hyperliquid tools before deciding. No stale data, no guesses — every verdict is grounded in the current state of the market and your account.
+      </p>
+      <div class="landing-tools-grid">
+        <div class="landing-tool-item reveal d1">
+          <span class="landing-tool-fn">get_clearinghouse_state</span>
+          <span class="landing-tool-label">Position &amp; Equity</span>
+          <span class="landing-tool-desc">Live account equity, open position side/size, entry price, unrealized PnL, and margin usage — checked first every cycle.</span>
+        </div>
+        <div class="landing-tool-item reveal d1">
+          <span class="landing-tool-fn">get_open_orders</span>
+          <span class="landing-tool-label">Open Orders</span>
+          <span class="landing-tool-desc">All pending open orders for the account — ensures stale orders are caught before a new one is placed.</span>
+        </div>
+        <div class="landing-tool-item reveal d1">
+          <span class="landing-tool-fn">get_all_mids</span>
+          <span class="landing-tool-label">Live Mid Prices</span>
+          <span class="landing-tool-desc">Current mid prices for all listed assets. Used to anchor the BTC price snapshot at decision time.</span>
+        </div>
+        <div class="landing-tool-item reveal d1">
+          <span class="landing-tool-fn">get_l2_book</span>
+          <span class="landing-tool-label">Order Book Depth</span>
+          <span class="landing-tool-desc">Full L2 order book — bid and ask sizes at every price level. Reveals real buying and selling pressure.</span>
+        </div>
+        <div class="landing-tool-item reveal d2">
+          <span class="landing-tool-fn">get_candle_snapshot</span>
+          <span class="landing-tool-label">Candlestick Data</span>
+          <span class="landing-tool-desc">OHLCV candles at 15m and 1h intervals. Direction and acceleration of the last 10 candles drive the primary verdict signal.</span>
+        </div>
+        <div class="landing-tool-item reveal d2">
+          <span class="landing-tool-fn">get_funding_history</span>
+          <span class="landing-tool-label">Funding Rate</span>
+          <span class="landing-tool-desc">Current perpetual funding rate. Positive = longs pay shorts, a cost that erodes hold time. Factored into LONG conviction.</span>
+        </div>
+        <div class="landing-tool-item reveal d2">
+          <span class="landing-tool-fn">get_user_fills</span>
+          <span class="landing-tool-label">Trade History</span>
+          <span class="landing-tool-desc">Last 5 fills for the account — recent execution context so the agent knows what was just traded and at what price.</span>
+        </div>
+        <div class="landing-tool-item reveal d2">
+          <span class="landing-tool-fn">get_meta</span>
+          <span class="landing-tool-label">Exchange Metadata</span>
+          <span class="landing-tool-desc">Asset specs, size decimals, tick sizes, and universe config from Hyperliquid — available on demand for order validation.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Signals -->
+  <section class="landing-section" id="signals">
+    <div class="landing-inner">
+      <p class="landing-label reveal">What OpenTrader Sees</p>
+      <div class="landing-signals-grid">
+        <div>
+          <h2 class="landing-signals-headline reveal d1">
+            Live data queried.<br>Agent searches.
+          </h2>
+          <p class="landing-signals-body reveal d2">
+            OpenTrader calls Hyperliquid tools before every decision — live price,
+            order book depth, your account state. Then searches the web for
+            current BTC news and sentiment. Synthesises both and streams
+            a direct verdict: LONG, SHORT, or PASS.
+          </p>
+          <ul class="landing-signals-list reveal d2">
+            <li class="landing-signal-item"><span class="landing-signal-dot"></span>get_clearinghouse_state — equity, position, PnL before every decision</li>
+            <li class="landing-signal-item"><span class="landing-signal-dot"></span>get_open_orders — stale order check before placing new ones</li>
+            <li class="landing-signal-item"><span class="landing-signal-dot"></span>get_all_mids — live BTC mid price at decision time</li>
+            <li class="landing-signal-item"><span class="landing-signal-dot"></span>get_l2_book — full order book depth, bid vs ask pressure</li>
+            <li class="landing-signal-item"><span class="landing-signal-dot"></span>get_candle_snapshot — last 10 × 15m candles, primary momentum signal</li>
+            <li class="landing-signal-item"><span class="landing-signal-dot"></span>get_funding_history — perpetual funding rate, factored into hold cost</li>
+            <li class="landing-signal-item"><span class="landing-signal-dot"></span>get_user_fills — last 5 fills for recent execution context</li>
+            <li class="landing-signal-item"><span class="landing-signal-dot"></span>get_meta — exchange specs available on demand</li>
+          </ul>
+        </div>
+        <div class="landing-code-block reveal d1">
+          <div class="landing-code-line"><span class="landing-code-key">btc_price</span><span class="landing-code-val">$78,243.50</span><span class="landing-code-comment">// get_all_mids</span></div>
+          <div class="landing-code-line"><span class="landing-code-key">bid_depth</span><span class="landing-code-green">22.2 BTC</span><span class="landing-code-comment">// get_l2_book · bids</span></div>
+          <div class="landing-code-line"><span class="landing-code-key">ask_depth</span><span class="landing-code-val">1.19 BTC</span><span class="landing-code-comment">// get_l2_book · asks</span></div>
+          <div class="landing-code-line"><span class="landing-code-key">candles_15m</span><span class="landing-code-green">↑↑↓↑↑</span><span class="landing-code-comment">// get_candle_snapshot</span></div>
+          <div class="landing-code-line"><span class="landing-code-key">funding_rate</span><span class="landing-code-val">+0.0082%</span><span class="landing-code-comment">// get_funding_history</span></div>
+          <div class="landing-code-line"><span class="landing-code-key">open_orders</span><span class="landing-code-val">0</span><span class="landing-code-comment">// get_open_orders · clear</span></div>
+          <div class="landing-code-line"><span class="landing-code-key">last_fill</span><span class="landing-code-val">LONG $77,940</span><span class="landing-code-comment">// get_user_fills</span></div>
+          <div class="landing-code-line"><span class="landing-code-key">equity</span><span class="landing-code-amber">$199.86</span><span class="landing-code-comment">// get_clearinghouse_state</span></div>
+          <div class="landing-code-line"><span class="landing-code-key">position</span><span class="landing-code-val">FLAT</span><span class="landing-code-comment">// no open position</span></div>
+          <div class="landing-code-line"><span class="landing-code-key">confidence</span><span class="landing-code-green">72%</span><span class="landing-code-comment">// agent certainty</span></div>
+          <div class="landing-code-line"><span class="landing-code-key">verdict</span><span class="landing-code-green">LONG</span><span class="landing-code-comment">// execute</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="landing-section" id="features">
+    <div class="landing-inner">
+      <p class="landing-label reveal">Why OpenTrader</p>
+      <h2 class="landing-headline reveal d1">Built for traders<br>who can't watch 24/7.</h2>
+      <div class="landing-modes-grid">
+        <div class="landing-mode-item reveal d1">
+          <p class="landing-mode-name" style="font-size:20px;margin-bottom:6px">⬡</p>
+          <p class="landing-mode-name">Live Hyperliquid data</p>
+          <p class="landing-mode-desc">Before every decision: live BTC price, order book depth, your account equity and open positions — all from Hyperliquid in real time.</p>
+        </div>
+        <div class="landing-mode-item reveal d1">
+          <p class="landing-mode-name" style="font-size:20px;margin-bottom:6px">⊛</p>
+          <p class="landing-mode-name">Continuous 24/7 loop</p>
+          <p class="landing-mode-desc">BTC-PERP never closes. Auto Mode runs every 90 seconds — Hyperliquid data + web search → verdict → execute → hold → repeat.</p>
+        </div>
+        <div class="landing-mode-item reveal d2">
+          <p class="landing-mode-name" style="font-size:20px;margin-bottom:6px">⟁</p>
+          <p class="landing-mode-name">Grounded in live data</p>
+          <p class="landing-mode-desc">Every verdict is anchored in a live Brave web search and Hyperliquid order book query — pulled seconds before the decision.</p>
+        </div>
+        <div class="landing-mode-item reveal d2">
+          <p class="landing-mode-name" style="font-size:20px;margin-bottom:6px">⊕</p>
+          <p class="landing-mode-name">Your keys, your orders</p>
+          <p class="landing-mode-desc">Your wallet key lives in your server environment. OpenTrader never holds funds. Auto Mode executes when confident; Manual Mode keeps you in the loop.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="landing-cta">
+    <div class="landing-cta-inner">
+      <h2 class="landing-cta-headline reveal">
+        YOUR AGENT<br>IS READY
+      </h2>
+      <p class="landing-cta-sub reveal d1">
+        BTC-PERP. 24/7. Live Hyperliquid data before every trade.<br>
+        One slider. Everything else runs without you.
+      </p>
+      <div class="landing-cta-btns reveal d2">
+        <a href="/agent" class="landing-btn-primary">Open Agent →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="landing-footer">
+    <span class="landing-footer-brand">Open Trader · BTC-PERP · Powered by OpenRouter</span>
+    <div class="landing-footer-links">
+      <a href="/agent"     class="landing-footer-link">Agent</a>
+      <a href="https://github.com/Julian-dev28/aomi-trader" target="_blank" rel="noopener noreferrer" class="landing-footer-link">GitHub</a>
+      <a href="https://openrouter.ai" target="_blank" rel="noopener noreferrer" class="landing-footer-link">OpenRouter</a>
+    </div>
+  </footer>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Scroll reveal
+(function() {
+  var els = document.querySelectorAll('.reveal');
+  var io = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+      if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); }
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -48px 0px' });
+  els.forEach(function(el) { io.observe(el); });
+})();
+</script>
+{% endblock %}
