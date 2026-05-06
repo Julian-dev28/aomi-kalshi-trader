@@ -36,13 +36,17 @@
         '</div>'
       : '<div style="font-family:monospace;font-size:11px;color:var(--text-muted);margin-top:4px;">FLAT</div>';
 
+    var pnl      = (pos && pos.unrealizedPnl) || 0;
+    var balance  = (acct.spotUSDC || 0) + pnl;
+    var pnlColor = pnl > 0 ? 'var(--green-dark)' : pnl < 0 ? 'var(--pink-dark)' : 'var(--text-muted)';
+    var detail   = 'USDC $' + (acct.spotUSDC || 0).toFixed(2) +
+      (pnl !== 0 ? ' <span style="color:' + pnlColor + '">' + (pnl >= 0 ? '+' : '') + pnl.toFixed(2) + ' PnL</span>' : '');
+
     el.innerHTML =
-      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">' +
-        '<div><div style="font-size:9px;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.06em;">Equity</div>' +
-        '<div style="font-family:monospace;font-size:13px;font-weight:700;color:var(--text-primary);">$' + (acct.equity || 0).toFixed(2) + '</div></div>' +
-        '<div><div style="font-size:9px;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.06em;">Spot USDC</div>' +
-        '<div style="font-family:monospace;font-size:13px;font-weight:700;color:var(--text-primary);">$' + (acct.spotUSDC || 0).toFixed(2) + '</div></div>' +
-      '</div>' + posHtml;
+      '<div style="font-size:9px;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:3px;">Balance</div>' +
+      '<div style="font-family:monospace;font-size:22px;font-weight:800;color:var(--text-primary);letter-spacing:-0.02em;">$' + balance.toFixed(2) + '</div>' +
+      '<div style="font-family:monospace;font-size:10px;color:var(--text-muted);margin-top:2px;margin-bottom:2px;">' + detail + '</div>' +
+      posHtml;
   }
 
   // ── Orderbook ─────────────────────────────────────────────────────────────
