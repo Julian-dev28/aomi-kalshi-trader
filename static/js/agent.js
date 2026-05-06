@@ -392,13 +392,16 @@
       }
       if (subEl) {
         if (autoMode) {
-          if (autoWaitUntil > Date.now()) {
-            var secs = Math.max(0, Math.ceil((autoWaitUntil - Date.now()) / 1000));
-            subEl.textContent = autoWaitLabel === 'Holding position'
-              ? secs + 's cooldown · watching for reversal'
-              : 'next analysis in ' + secs + 's';
+          var secs = autoWaitUntil > 0 ? Math.max(0, Math.ceil((autoWaitUntil - Date.now()) / 1000)) : 0;
+          if (secs > 0) {
+            subEl.innerHTML = autoWaitLabel === 'Holding position'
+              ? secs + 's hold · watching for reversal'
+              : 'next scan in <span style="font-variant-numeric:tabular-nums;min-width:28px;display:inline-block;">' + secs + 's</span>';
           } else {
-            subEl.textContent = 'cycle ' + autoCycles + ' complete · queuing next scan…';
+            subEl.innerHTML = 'cycle ' + autoCycles + ' · <span style="opacity:0.7;">starting scan</span>' +
+              '<span class="dot-bounce" style="display:inline-block;width:4px;height:4px;border-radius:50%;background:currentColor;margin-left:4px;vertical-align:middle;animation:dotbounce 1s ease-in-out infinite;animation-delay:0s;"></span>' +
+              '<span class="dot-bounce" style="display:inline-block;width:4px;height:4px;border-radius:50%;background:currentColor;margin-left:3px;vertical-align:middle;animation:dotbounce 1s ease-in-out infinite;animation-delay:0.2s;"></span>' +
+              '<span class="dot-bounce" style="display:inline-block;width:4px;height:4px;border-radius:50%;background:currentColor;margin-left:3px;vertical-align:middle;animation:dotbounce 1s ease-in-out infinite;animation-delay:0.4s;"></span>';
           }
         } else {
           subEl.textContent = 'start agent for 24/7 autonomous trading';
