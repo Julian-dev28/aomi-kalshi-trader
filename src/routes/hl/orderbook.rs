@@ -5,8 +5,8 @@ use serde_json::{json, Value};
 use crate::state::AppState;
 use crate::hyperliquid::market::hl_post;
 
-pub async fn orderbook_handler(State(_state): State<AppState>) -> Json<Value> {
-    let client = reqwest::Client::new();
+pub async fn orderbook_handler(State(state): State<AppState>) -> Json<Value> {
+    let client = state.http.clone();
     match hl_post(&client, json!({ "type": "l2Book", "coin": "BTC" })).await {
         Ok(data) => {
             let empty = vec![];

@@ -21,7 +21,9 @@ pub struct ChatRequest {
     pub hint: Option<String>,
     #[serde(rename = "sessionId")]
     pub session_id: Option<String>,
+    #[allow(dead_code)]
     pub market_data: Option<Value>,
+    #[allow(dead_code)]
     #[serde(rename = "riskPct")]
     pub risk_pct: Option<f64>,
 }
@@ -37,6 +39,7 @@ pub async fn chat_handler(
     state.cancel_tokens.insert(session_id.clone(), cancel_token.clone());
 
     let config = state.config.clone();
+    let http_client = state.http.clone();
 
     tokio::spawn(async move {
         let send = |data: Value| {
@@ -53,8 +56,6 @@ pub async fn chat_handler(
             json!({ "role": "system", "content": system_content }),
             json!({ "role": "user", "content": body.message }),
         ];
-
-        let http_client = reqwest::Client::new();
         let mut loops = 0;
 
         'outer: loop {
@@ -75,17 +76,26 @@ pub async fn chat_handler(
                 "stream": true
             });
 
-            let resp = match http_client
-                .post("https://openrouter.ai/api/v1/chat/completions")
-                .header("Authorization", format!("Bearer {}", config.openrouter_api_key))
-                .header("Content-Type", "application/json")
-                .json(&payload)
-                .send()
-                .await
+            let resp = match tokio::time::timeout(
+                std::time::Duration::from_secs(90),
+                http_client
+                    .post("https://openrouter.ai/api/v1/chat/completions")
+                    .header("Authorization", format!("Bearer {}", config.openrouter_api_key))
+                    .header("Content-Type", "application/json")
+                    .header("HTTP-Referer", "https://aomi-trader.app")
+                    .header("X-Title", "AOMI Trader")
+                    .json(&payload)
+                    .send(),
+            )
+            .await
             {
-                Ok(r) => r,
-                Err(e) => {
+                Ok(Ok(r)) => r,
+                Ok(Err(e)) => {
                     send(json!({ "type": "error", "text": e.to_string() }));
+                    break;
+                }
+                Err(_) => {
+                    send(json!({ "type": "error", "text": "OpenRouter request timed out" }));
                     break;
                 }
             };
@@ -131,13 +141,9 @@ pub async fn chat_handler(
                 buf.push_str(&String::from_utf8_lossy(&chunk));
 
                 // Process complete lines
-                loop {
-                    let pos = match buf.find('\n') {
-                        Some(p) => p,
-                        None => break,
-                    };
+                while let Some(pos) = buf.find('\n') {
                     let line = buf[..pos].trim().to_string();
-                    buf = buf[pos + 1..].to_string();
+                    buf.drain(..=pos);
 
                     if line.is_empty() || line.starts_with(':') {
                         continue;
@@ -191,7 +197,6 @@ pub async fn chat_handler(
                 sorted.sort_by_key(|(k, _)| *k);
                 sorted.into_iter().map(|(_, v)| v).collect()
             };
-            tool_accum = HashMap::new();
 
             let is_tool_call = !tool_calls.is_empty()
                 && finish_reason.as_deref() == Some("tool_calls");

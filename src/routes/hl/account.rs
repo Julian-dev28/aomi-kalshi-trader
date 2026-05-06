@@ -6,7 +6,7 @@ use crate::state::AppState;
 use crate::hyperliquid::market::get_hl_account;
 
 pub async fn account_handler(State(state): State<AppState>) -> Json<Value> {
-    let client = reqwest::Client::new();
+    let client = state.http.clone();
     let wallet = state.config.hl_account.clone();
     match get_hl_account(&client, &wallet).await {
         Ok(account) => Json(json!({

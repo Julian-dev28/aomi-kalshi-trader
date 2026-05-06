@@ -12,7 +12,7 @@ pub struct CandlesQuery {
 }
 
 pub async fn candles_handler(
-    State(_state): State<AppState>,
+    State(state): State<AppState>,
     Query(params): Query<CandlesQuery>,
 ) -> Json<Value> {
     let window = params.window.as_deref().unwrap_or("1h");
@@ -35,7 +35,7 @@ pub async fn candles_handler(
     let end_time = now;
     let start_time = end_time.saturating_sub(ms);
 
-    let client = reqwest::Client::new();
+    let client = state.http.clone();
     match hl_post(
         &client,
         json!({

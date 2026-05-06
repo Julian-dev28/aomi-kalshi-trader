@@ -22,7 +22,7 @@ pub async fn place_order_handler(
     Json(body): Json<PlaceOrderRequest>,
 ) -> Json<Value> {
     let cfg = &state.config;
-    let client = reqwest::Client::new();
+    let client = state.http.clone();
 
     let leverage = body.leverage.unwrap_or(HL_LEVERAGE);
 

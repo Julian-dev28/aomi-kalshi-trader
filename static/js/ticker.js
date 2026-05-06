@@ -3,7 +3,7 @@
   'use strict';
 
   var priceHistory = [];
-  var MAX_HISTORY = 300;
+  var MAX_HISTORY = 7200; // 4h of 2s ticks
   var lastPrice = 0;
   var lastAccount = null;
 
@@ -55,7 +55,31 @@
     fetchAccount();
   };
 
+  function prefillHistory() {
+    fetch('/api/hl/candles?window=4h')
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        var candles = data.candles || [];
+        candles.forEach(function (c) {
+          if (c.c > 0) {
+            priceHistory.push({ timestamp: c.t, price: c.c });
+          }
+        });
+        if (priceHistory.length > MAX_HISTORY) {
+          priceHistory = priceHistory.slice(priceHistory.length - MAX_HISTORY);
+        }
+        if (priceHistory.length > 0) {
+          lastPrice = priceHistory[priceHistory.length - 1].price;
+          document.dispatchEvent(new CustomEvent('btctick', {
+            detail: { price: lastPrice, priceHistory: priceHistory.slice() }
+          }));
+        }
+      })
+      .catch(function () {});
+  }
+
   // Init
+  prefillHistory();
   fetchPrice();
   fetchAccount();
   setInterval(fetchPrice, 2000);

@@ -1,4 +1,3 @@
-#![allow(dead_code)]
 mod aomi;
 mod config;
 mod hyperliquid;

@@ -82,3 +82,6 @@ python-service/test_tiered_kelly.py
 ONE_PAGER.md
 THREAD.md
 DISTRIBUTE.md
+
+# Rust build artifacts
+/target/

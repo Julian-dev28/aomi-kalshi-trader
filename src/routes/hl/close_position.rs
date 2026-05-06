@@ -8,7 +8,7 @@ use crate::hyperliquid::signing::place_hl_order;
 
 pub async fn close_position_handler(State(state): State<AppState>) -> Json<Value> {
     let cfg = &state.config;
-    let client = reqwest::Client::new();
+    let client = state.http.clone();
 
     let (price_res, account_res) = tokio::join!(
         get_hl_price(&client),
