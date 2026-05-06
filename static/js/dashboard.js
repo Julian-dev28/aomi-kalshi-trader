@@ -219,6 +219,139 @@
       });
   };
 
+  // ── Trade controls ───────────────────────────────────────────────────────
+
+  var leverage = 5;
+
+  function setLev(lev) {
+    leverage = lev;
+    [1, 2, 3, 5, 10, 20].forEach(function (l) {
+      var btn = document.getElementById('lev-' + l);
+      if (btn) {
+        btn.classList.toggle('lev-active', l === lev);
+        btn.style.flex = '1';
+      }
+    });
+    updateNotional();
+  }
+
+  window.setRisk = function (pct) {
+    var equity = (account && account.spotUSDC) || 0;
+    var inp = document.getElementById('trade-amount');
+    if (inp) { inp.value = (equity * pct / 100).toFixed(2); updateNotional(); }
+  };
+
+  window.setLev = setLev;
+
+  window.updateNotional = function () {
+    var inp = document.getElementById('trade-amount');
+    var prev = document.getElementById('notional-preview');
+    if (!inp || !prev) return;
+    var amt = parseFloat(inp.value) || 0;
+    if (amt > 0 && btcPrice) {
+      var notional = amt * leverage;
+      var btcSize  = notional / btcPrice;
+      prev.style.display = 'block';
+      prev.textContent = '$' + notional.toLocaleString('en-US', { maximumFractionDigits: 2 }) +
+        ' notional · ≈' + btcSize.toFixed(5) + ' BTC';
+    } else {
+      prev.style.display = 'none';
+    }
+  };
+
+  function setOrderStatus(type, msg) {
+    var el = document.getElementById('order-status');
+    if (!el) return;
+    if (!type) { el.style.display = 'none'; return; }
+    el.style.display = 'block';
+    if (type === 'placing') {
+      el.style.background = 'var(--bg-secondary)';
+      el.style.border = '1px solid var(--border)';
+      el.style.color = 'var(--text-muted)';
+      el.textContent = 'Placing order…';
+    } else if (type === 'ok') {
+      el.style.background = 'var(--green-pale)';
+      el.style.border = '1px solid rgba(46,158,104,0.2)';
+      el.style.color = 'var(--green-dark)';
+      el.textContent = '✓ ' + msg;
+      setTimeout(function () { setOrderStatus(null); }, 5000);
+    } else if (type === 'err') {
+      el.style.background = 'var(--pink-pale)';
+      el.style.border = '1px solid rgba(190,74,64,0.2)';
+      el.style.color = 'var(--pink-dark)';
+      el.textContent = msg;
+    }
+  }
+
+  function setTradeButtonsDisabled(disabled) {
+    var btns = document.querySelectorAll('#trade-buttons button');
+    btns.forEach(function (b) { b.disabled = disabled; b.style.opacity = disabled ? '0.5' : '1'; });
+  }
+
+  window.placeOrder = function (side) {
+    var inp = document.getElementById('trade-amount');
+    var riskUSD = parseFloat((inp && inp.value) || '0') || 0;
+    setTradeButtonsDisabled(true);
+    setOrderStatus('placing');
+    fetch('/api/hl/place-order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ side: side, risk_usd: riskUSD, leverage: leverage }),
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        setTradeButtonsDisabled(false);
+        if (d.ok) {
+          setOrderStatus('ok', (d.sizeBTC || 0).toFixed(5) + ' BTC @ $' +
+            (d.midPrice || 0).toLocaleString('en-US', { maximumFractionDigits: 0 }));
+          window.refreshAccount();
+        } else {
+          setOrderStatus('err', d.error || 'Order failed');
+        }
+      })
+      .catch(function (e) { setTradeButtonsDisabled(false); setOrderStatus('err', String(e)); });
+  };
+
+  window.closePosition = function () {
+    setTradeButtonsDisabled(true);
+    setOrderStatus('placing');
+    fetch('/api/hl/close-position', { method: 'POST' })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        setTradeButtonsDisabled(false);
+        if (d.ok) {
+          setOrderStatus('ok', 'Position closed @ $' +
+            (d.midPrice || 0).toLocaleString('en-US', { maximumFractionDigits: 0 }));
+          window.refreshAccount();
+        } else {
+          setOrderStatus('err', d.error || 'Close failed');
+        }
+      })
+      .catch(function (e) { setTradeButtonsDisabled(false); setOrderStatus('err', String(e)); });
+  };
+
+  // Show/hide Close button based on open position
+  function updateTradeButtons() {
+    var tradeGrid = document.getElementById('trade-buttons');
+    if (!tradeGrid) return;
+    var hasPos = account && account.position;
+    tradeGrid.style.gridTemplateColumns = hasPos ? '1fr 1fr 1fr' : '1fr 1fr';
+    var existing = document.getElementById('close-btn');
+    if (hasPos && !existing) {
+      var btn = document.createElement('button');
+      btn.id = 'close-btn';
+      btn.onclick = window.closePosition;
+      btn.setAttribute('onmouseover', "this.style.background='var(--amber)';this.style.color='#fff'");
+      btn.setAttribute('onmouseout', "this.style.background='var(--amber-pale)';this.style.color='var(--amber)'");
+      btn.style.cssText = 'padding:10px 0;border-radius:9px;border:1.5px solid rgba(176,118,16,0.6);background:var(--amber-pale);font-size:12px;font-weight:800;color:var(--amber);cursor:pointer;letter-spacing:0.02em;';
+      btn.textContent = '✕ Close';
+      tradeGrid.appendChild(btn);
+    } else if (!hasPos && existing) {
+      existing.remove();
+      tradeGrid.style.gridTemplateColumns = '1fr 1fr';
+    }
+  }
+
   // ── Init ──────────────────────────────────────────────────────────────────
 
   document.addEventListener('btctick', function (e) {
@@ -233,8 +366,10 @@
   document.addEventListener('accounttick', function (e) {
     account = e.detail.account;
     renderAccount(account);
+    updateTradeButtons();
   });
 
+  setLev(5); // default leverage active state
   fetchOrderbook();
   setInterval(fetchOrderbook, 3000);
 })();

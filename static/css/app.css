@@ -131,6 +131,15 @@ html, body {
 .info-val { font-size: 11px; font-weight: 700; color: var(--text-secondary); font-family: monospace; }
 
 /* ── Leverage buttons ─────────────────────────────────────────────────── */
+.risk-btn {
+  flex: 1; padding: 5px 0; border-radius: 7px; font-size: 10px; font-weight: 700; cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--bg-secondary);
+  color: var(--text-muted);
+  transition: all 0.12s;
+}
+.risk-btn:hover { border-color: var(--blue); color: var(--blue); }
+
 .lev-btn {
   padding: 4px 9px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer;
   border: 1px solid var(--border);

@@ -42,7 +42,7 @@
 
   <main style="flex:1;display:grid;grid-template-columns:280px 1fr 260px;gap:12px;padding:16px 20px;align-items:start;min-height:0;">
 
-    <!-- Left: Account card -->
+    <!-- Left: Account + Trade card -->
     <div style="display:flex;flex-direction:column;gap:12px;">
       <div class="card" id="market-card">
         <div style="font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">BTC-PERP</div>
@@ -53,6 +53,56 @@
           <div style="font-family:monospace;font-size:11px;color:var(--text-muted);">Loading…</div>
         </div>
         <button onclick="refreshAccount()" style="margin-top:10px;width:100%;padding:6px;border-radius:8px;border:1px solid var(--border);background:var(--bg-secondary);cursor:pointer;font-size:11px;font-weight:600;color:var(--text-muted);">↺ Refresh</button>
+
+        <div style="height:1px;background:var(--border);margin:14px 0;"></div>
+
+        <!-- Amount -->
+        <div style="font-size:9px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:6px;">Amount (USD)</div>
+        <div style="position:relative;margin-bottom:6px;">
+          <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-family:monospace;font-size:13px;color:var(--text-muted);pointer-events:none;">$</span>
+          <input id="trade-amount" type="number" min="0" step="0.01" placeholder="0.00"
+            oninput="updateNotional()"
+            style="width:100%;box-sizing:border-box;padding:8px 10px 8px 22px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg-secondary);font-family:monospace;font-size:13px;font-weight:700;color:var(--text-primary);outline:none;" />
+        </div>
+        <div style="display:flex;gap:5px;margin-bottom:10px;">
+          <button onclick="setRisk(1)"  class="risk-btn">1%</button>
+          <button onclick="setRisk(2)"  class="risk-btn">2%</button>
+          <button onclick="setRisk(5)"  class="risk-btn">5%</button>
+          <button onclick="setRisk(10)" class="risk-btn">10%</button>
+        </div>
+
+        <!-- Leverage -->
+        <div style="font-size:9px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:6px;">Leverage</div>
+        <div style="display:flex;gap:5px;margin-bottom:10px;">
+          <button onclick="setLev(1)"  class="lev-btn" id="lev-1" >1×</button>
+          <button onclick="setLev(2)"  class="lev-btn" id="lev-2" >2×</button>
+          <button onclick="setLev(3)"  class="lev-btn" id="lev-3" >3×</button>
+          <button onclick="setLev(5)"  class="lev-btn" id="lev-5" >5×</button>
+          <button onclick="setLev(10)" class="lev-btn" id="lev-10">10×</button>
+          <button onclick="setLev(20)" class="lev-btn" id="lev-20">20×</button>
+        </div>
+
+        <!-- Notional preview -->
+        <div id="notional-preview" style="display:none;padding:6px 10px;border-radius:8px;background:var(--bg-secondary);border:1px solid var(--border);margin-bottom:10px;font-family:monospace;font-size:11px;color:var(--text-secondary);"></div>
+
+        <!-- Trade buttons -->
+        <div id="trade-buttons" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+          <button onclick="placeOrder('long')"
+            style="padding:10px 0;border-radius:9px;border:1.5px solid var(--green);background:var(--green-pale);font-size:12px;font-weight:800;color:var(--green-dark);cursor:pointer;letter-spacing:0.02em;"
+            onmouseover="this.style.background='var(--green)';this.style.color='#fff'"
+            onmouseout="this.style.background='var(--green-pale)';this.style.color='var(--green-dark)'">
+            ↑ Long
+          </button>
+          <button onclick="placeOrder('short')"
+            style="padding:10px 0;border-radius:9px;border:1.5px solid var(--pink);background:var(--pink-pale);font-size:12px;font-weight:800;color:var(--pink-dark);cursor:pointer;letter-spacing:0.02em;"
+            onmouseover="this.style.background='var(--pink)';this.style.color='#fff'"
+            onmouseout="this.style.background='var(--pink-pale)';this.style.color='var(--pink-dark)'">
+            ↓ Short
+          </button>
+        </div>
+
+        <!-- Order status -->
+        <div id="order-status" style="display:none;margin-top:8px;padding:8px 10px;border-radius:8px;font-size:11px;font-weight:600;"></div>
       </div>
     </div>
 
